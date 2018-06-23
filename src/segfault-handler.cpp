@@ -5,9 +5,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#if (NODE_MODULE_VERSION < 0x0033)
-#include <v8-debug.h>
-#endif
 #include <time.h>
 #include <node.h>
 #include <uv.h>
