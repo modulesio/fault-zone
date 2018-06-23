@@ -195,6 +195,9 @@ SEGFAULT_HANDLER {
   #ifdef _WIN32
     address = (long)exceptionInfo->ExceptionRecord->ExceptionAddress;
     code = (long)exceptionInfo->ExceptionRecord->ExceptionCode;
+    if (code < 0x80000000) {
+      return EXCEPTION_CONTINUE_SEARCH;
+    }
   #else
     address = (long)si->si_addr;
     code = (long)si->si_signo;
