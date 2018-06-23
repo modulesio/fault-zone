@@ -220,7 +220,7 @@ SEGFAULT_HANDLER {
 
   #ifdef _WIN32
     // will generate the stack trace and write to fd and stderr
-    StackWalker sw(fd);
+    StackWalker sw;
     sw.ShowCallstack();
 
     array[0] = (void *)sw.error.c_str();

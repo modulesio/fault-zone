@@ -65,7 +65,7 @@ public:
   } StackWalkOptions;
 
   StackWalker(
-    int fDescriptor,
+    // int fDescriptor,
     int options = OptionsAll, // 'int' is by design, to combine the enum-flags
     LPCSTR szSymPath = NULL,
     DWORD dwProcessId = GetCurrentProcessId(),
@@ -135,7 +135,7 @@ protected:
 
   int m_options;
 
-  int m_fDescriptor;
+  // int m_fDescriptor;
 
   static BOOL __stdcall myReadProcMem(HANDLE hProcess, DWORD64 qwBaseAddress, PVOID lpBuffer, DWORD nSize, LPDWORD lpNumberOfBytesRead);
 

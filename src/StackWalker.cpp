@@ -744,9 +744,9 @@ StackWalker::StackWalker(DWORD dwProcessId, HANDLE hProcess)
   this->m_dwProcessId = dwProcessId;
   this->m_szSymPath = NULL;
 }
-StackWalker::StackWalker(int fDescriptor, int options, LPCSTR szSymPath, DWORD dwProcessId, HANDLE hProcess)
+StackWalker::StackWalker(/*int fDescriptor, */int options, LPCSTR szSymPath, DWORD dwProcessId, HANDLE hProcess)
 {
-  this->m_fDescriptor = fDescriptor;
+  // this->m_fDescriptor = fDescriptor;
   this->m_options = options;
   this->m_modulesLoaded = FALSE;
   this->m_hProcess = hProcess;
