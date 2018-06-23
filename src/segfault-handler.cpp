@@ -54,6 +54,10 @@ using namespace Nan;
 
 #define BUFF_SIZE 128
 
+Eternal<ArrayBuffer> segfaultError;
+void *segfaultErrorData;
+size_t segfaultErrorByteLength;
+
 struct callback_helper {
 
   struct callback_args {
@@ -151,10 +155,16 @@ struct callback_helper {
     }
 
     // collect all callback arguments
-    Local<Value> argv[3] = {Number::New(isolate, args->signo), Number::New(isolate, args->addr), argStack};
+    Handle<Value> segfaultErrorLocal = segfaultError.Get(Isolate::GetCurrent());
+    Handle<Value> argv[] = {
+      Number::New(isolate, args->signo),
+      Number::New(isolate, args->addr),
+      segfaultErrorLocal,
+      Number::New(isolate, segfaultErrorByteLength)
+    };
 
     // execute the callback function on the main threaod
-    Local<Function>::New(isolate, *args->callback)->Call(isolate->GetCurrentContext()->Global(), 3, argv);
+    Local<Function>::New(isolate, *args->callback)->Call(isolate->GetCurrentContext()->Global(), sizeof(argv)/sizeof(argv[0]), argv);
 
     // broadcast that we're done with the callback
     args->cond.notify_one();
@@ -229,6 +239,16 @@ SEGFAULT_HANDLER {
     if(fd > 0) backtrace_symbols_fd(array, size, fd);
     backtrace_symbols_fd(array, size, STDERR_FD);
   #endif
+
+  size_t index = 0;
+  for (size_t i = 0; i < size; i++) {
+    char *e = (char *)(array[i]);
+    size_t length = strlen(e);
+    memcpy((char *)segfaultErrorData + index, e, length);
+    ((char *)segfaultErrorData)[index + length] = '\n';
+    index += length + 1;
+  }
+  segfaultErrorByteLength = index;
 
   CLOSE(fd);
 
@@ -326,6 +346,11 @@ NAN_METHOD(RegisterHandler) {
 
 extern "C" {
   NAN_MODULE_INIT(init) {
+    Local<ArrayBuffer> segfaultErrorLocal = ArrayBuffer::New(Isolate::GetCurrent(), 4096);
+    segfaultError.Set(Isolate::GetCurrent(), segfaultErrorLocal);
+    segfaultErrorData = segfaultErrorLocal->GetContents().Data();
+    segfaultErrorByteLength = segfaultErrorLocal->ByteLength();
+
     Nan::SetMethod(target, "registerHandler", RegisterHandler);
     Nan::SetMethod(target, "causeSegfault", CauseSegfault);
   }
