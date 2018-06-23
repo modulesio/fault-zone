@@ -222,7 +222,7 @@ SEGFAULT_HANDLER {
     sw.ShowCallstack();
 
     array = new char *[32]; // Array to store backtrace symbols
-    array[0] = sw.error.c_str();
+    array[0] = (char *)sw.error.c_str();
     size = 1;
   #else
     // Write the Backtrace
