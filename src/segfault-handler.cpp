@@ -70,11 +70,9 @@ struct callback_helper {
     std::mutex mutex;
     std::condition_variable cond;
 
-    callback_args(v8::Persistent<Function, v8::CopyablePersistentTraits<Function> >* callback, void * const* stack, size_t stack_size, int signo, long addr) :
+    callback_args(v8::Persistent<Function, v8::CopyablePersistentTraits<Function> >* callback, char **stack, size_t stack_size, int signo, long addr) :
       callback(callback),
-#ifndef _WIN32
-      stack(backtrace_symbols(stack, stack_size)),
-#endif
+      stack(stack),
       stack_size(stack_size),
       signo(signo),
       addr(addr)
@@ -108,7 +106,7 @@ struct callback_helper {
     uv_close((uv_handle_t*) handle, close_callback);
   }
 
-  void send(void * const* stack, size_t stack_size, int signo, long addr) {
+  void send(char **stack, size_t stack_size, int signo, long addr) {
     // create the callback arguments
     callback_args* args = new callback_args(&callback, stack, stack_size, signo, addr);
 
@@ -180,10 +178,10 @@ char logPath[BUFF_SIZE];
 } */
 
 SEGFAULT_HANDLER {
-  long    address;
+  long address;
   long code;
-  void    *array[32]; // Array to store backtrace symbols
-  size_t  size;       // To store the size of the stack backtrace
+  char *array[32]; // Array to store backtrace symbols
+  size_t size;       // To store the size of the stack backtrace
   // char    sbuff[BUFF_SIZE];
   // int     n;          // chars written to buffer
   // int     fd;
@@ -223,13 +221,13 @@ SEGFAULT_HANDLER {
     StackWalker sw;
     sw.ShowCallstack();
 
-    array[0] = (void *)sw.error.c_str();
+    array[0] = sw.error.c_str();
     size = 1;
   #else
     // Write the Backtrace
-    size = backtrace(array, 32);
+    size = backtrace((void **)array, 32);
     // if(fd > 0) backtrace_symbols_fd(array, size, fd);
-    backtrace_symbols(array, size);
+    backtrace_symbols((void* const*)array, size);
   #endif
 
   size_t index = 0;
