@@ -148,12 +148,6 @@ struct callback_helper {
     // lock the mutex
     std::unique_lock<std::mutex> lock(args->mutex);
 
-    // build the stack arguments
-    Local<Array> argStack = Array::New(isolate, args->stack_size);
-    for (size_t i = 0; i < args->stack_size; i++) {
-      argStack->Set(i, String::NewFromUtf8(isolate, args->stack[i]));
-    }
-
     // collect all callback arguments
     Handle<Value> segfaultErrorLocal = segfaultError.Get(Isolate::GetCurrent());
     Handle<Value> argv[] = {
