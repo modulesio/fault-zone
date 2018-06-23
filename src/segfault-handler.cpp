@@ -341,7 +341,7 @@ NAN_METHOD(RegisterHandler) {
 
 extern "C" {
   NAN_MODULE_INIT(init) {
-    Local<ArrayBuffer> segfaultErrorLocal = ArrayBuffer::New(Isolate::GetCurrent(), 4096);
+    Local<ArrayBuffer> segfaultErrorLocal = ArrayBuffer::New(Isolate::GetCurrent(), 16 * 1024);
     segfaultError.Set(Isolate::GetCurrent(), segfaultErrorLocal);
     segfaultErrorData = segfaultErrorLocal->GetContents().Data();
     segfaultErrorByteLength = segfaultErrorLocal->ByteLength();
