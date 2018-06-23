@@ -180,7 +180,7 @@ char logPath[BUFF_SIZE];
 SEGFAULT_HANDLER {
   long address;
   long code;
-  char *array[32]; // Array to store backtrace symbols
+  char **array; // Array to store backtrace symbols
   size_t size;       // To store the size of the stack backtrace
   // char    sbuff[BUFF_SIZE];
   // int     n;          // chars written to buffer
@@ -221,13 +221,15 @@ SEGFAULT_HANDLER {
     StackWalker sw;
     sw.ShowCallstack();
 
+    array = new char *[32]; // Array to store backtrace symbols
     array[0] = sw.error.c_str();
     size = 1;
   #else
     // Write the Backtrace
-    size = backtrace((void **)array, 32);
-    // if(fd > 0) backtrace_symbols_fd(array, size, fd);
-    backtrace_symbols((void* const*)array, size);
+    void *symbols[32];
+    size = backtrace(symbols, 32);
+    // if(fd > 0) backtrace_symbols_fd(symbols, size, fd);
+    array = backtrace_symbols(symbols, size);
   #endif
 
   size_t index = 0;
