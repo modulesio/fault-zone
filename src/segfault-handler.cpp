@@ -157,8 +157,6 @@ struct callback_helper {
     // collect all callback arguments
     Handle<Value> segfaultErrorLocal = segfaultError.Get(Isolate::GetCurrent());
     Handle<Value> argv[] = {
-      Number::New(isolate, args->signo),
-      Number::New(isolate, args->addr),
       segfaultErrorLocal,
       Number::New(isolate, segfaultErrorByteLength)
     };
