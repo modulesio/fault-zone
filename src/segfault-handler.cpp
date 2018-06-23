@@ -184,12 +184,12 @@ SEGFAULT_HANDLER {
   long code;
   void    *array[32]; // Array to store backtrace symbols
   size_t  size;       // To store the size of the stack backtrace
-  char    sbuff[BUFF_SIZE];
-  int     n;          // chars written to buffer
-  int     fd;
-  int     pid;
+  // char    sbuff[BUFF_SIZE];
+  // int     n;          // chars written to buffer
+  // int     fd;
+  // int     pid;
 
-  pid = GETPID();
+  // pid = GETPID();
 
   /* buildFileName(sbuff, pid);
   fd = OPEN(sbuff, O_FLAGS, S_FLAGS); */
@@ -242,7 +242,7 @@ SEGFAULT_HANDLER {
   }
   segfaultErrorByteLength = index;
 
-  CLOSE(fd);
+  // CLOSE(fd);
 
   if (callback) {
   // execute the callback and wait until it has completed
