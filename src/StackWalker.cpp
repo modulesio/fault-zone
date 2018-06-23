@@ -1210,11 +1210,12 @@ void StackWalker::OnSymInit(LPCSTR szSearchPath, DWORD symOptions, LPCSTR szUser
 
 void StackWalker::OnOutput(LPCSTR buffer)
 {
-  if(m_fDescriptor > 0) {
+  /* if(m_fDescriptor > 0) {
     unsigned int n = (unsigned int)strlen(buffer);
     if (_write(m_fDescriptor, buffer, n) != n) {
       fprintf(stderr, "NodeSegfaultHandlerNative: Error writing to file\n");
     }
   }
-  fprintf(stderr, buffer);
+  fprintf(stderr, buffer); */
+  error += buffer;
 }

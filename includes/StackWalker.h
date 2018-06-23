@@ -14,6 +14,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <string>
 
 // special defines for VC5/6 (if no actual PSDK is installed):
 #if _MSC_VER < 1300
@@ -90,6 +91,8 @@ public:
     PReadProcessMemoryRoutine readMemoryFunction = NULL,
     LPVOID pUserData = NULL  // optional to identify some data in the 'readMemoryFunction'-callback
     );
+
+  std::string error;
 
 #if _MSC_VER >= 1300
 // due to some reasons, the "STACKWALK_MAX_NAMELEN" must be declared as "public"
