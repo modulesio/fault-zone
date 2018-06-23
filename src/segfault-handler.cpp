@@ -23,6 +23,9 @@
 #include <unistd.h>
 #include <pthread.h>
 #endif
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 using namespace v8;
 using namespace Nan;
@@ -51,7 +54,6 @@ using namespace Nan;
 
 #define BUFF_SIZE 128
 
-#ifndef _WIN32
 struct callback_helper {
 
   struct callback_args {
@@ -61,19 +63,21 @@ struct callback_helper {
     size_t stack_size;
     int signo;
     long addr;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
+    std::mutex mutex;
+    std::condition_variable cond;
 
     callback_args(v8::Persistent<Function, v8::CopyablePersistentTraits<Function> >* callback, void * const* stack, size_t stack_size, int signo, long addr) :
-    callback(callback), stack(backtrace_symbols(stack, stack_size)), stack_size(stack_size), signo(signo), addr(addr) {
-      pthread_mutex_init(&mutex, NULL);
-      pthread_cond_init(&cond, NULL);
-    }
+      callback(callback),
+#ifndef _WIN32
+      stack(backtrace_symbols(stack, stack_size)),
+#endif
+      stack_size(stack_size),
+      signo(signo),
+      addr(addr)
+      {}
 
     ~callback_args() {
       free(stack);
-      pthread_mutex_destroy(&mutex);
-      pthread_cond_destroy(&cond);
     }
   };
 
@@ -113,16 +117,13 @@ struct callback_helper {
       make_callback(handle);
     } else {
       // lock the callback mutex
-      pthread_mutex_lock(&args->mutex);
+      std::unique_lock<std::mutex> lock(args->mutex);
 
       // trigger the async callback
       uv_async_send(handle);
 
       // wait for it to finish
-      pthread_cond_wait(&args->cond, &args->mutex);
-
-      // unlock the callback mutex
-      pthread_mutex_unlock(&args->mutex);
+      args->cond.wait(lock);
     }
 
     // free the callback args
@@ -141,7 +142,7 @@ struct callback_helper {
     struct callback_args* args = (struct callback_args*) handle->data;
 
     // lock the mutex
-    pthread_mutex_lock(&args->mutex);
+    std::unique_lock<std::mutex> lock(args->mutex);
 
     // build the stack arguments
     Local<Array> argStack = Array::New(isolate, args->stack_size);
@@ -156,15 +157,11 @@ struct callback_helper {
     Local<Function>::New(isolate, *args->callback)->Call(isolate->GetCurrentContext()->Global(), 3, argv);
 
     // broadcast that we're done with the callback
-    pthread_cond_broadcast(&args->cond);
-
-    // unlock the mutex
-    pthread_mutex_unlock(&args->mutex);
+    args->cond.notify_one();
   }
 };
 
 struct callback_helper* callback;
-#endif
 
 char logPath[BUFF_SIZE];
 
@@ -182,10 +179,9 @@ static void buildFileName(char sbuff[BUFF_SIZE], int pid) {
 
 SEGFAULT_HANDLER {
   long    address;
-  #ifndef _WIN32
-    void    *array[32]; // Array to store backtrace symbols
-    size_t  size;       // To store the size of the stack backtrace
-  #endif
+  long code;
+  void    *array[32]; // Array to store backtrace symbols
+  size_t  size;       // To store the size of the stack backtrace
   char    sbuff[BUFF_SIZE];
   int     n;          // chars written to buffer
   int     fd;
@@ -198,11 +194,13 @@ SEGFAULT_HANDLER {
 
   #ifdef _WIN32
     address = (long)exceptionInfo->ExceptionRecord->ExceptionAddress;
+    code = (long)exceptionInfo->ExceptionRecord->ExceptionCode;
   #else
     address = (long)si->si_addr;
+    code = (long)si->si_signo;
   #endif
 
-  // Write the header line
+  /* // Write the header line
   n = SNPRINTF(
     sbuff,
     BUFF_SIZE,
@@ -216,12 +214,15 @@ SEGFAULT_HANDLER {
       fprintf(stderr, "NodeSegfaultHandlerNative: Error writing to file\n");
     }
   }
-  fprintf(stderr, "%s", sbuff);
+  fprintf(stderr, "%s", sbuff); */
 
   #ifdef _WIN32
     // will generate the stack trace and write to fd and stderr
     StackWalker sw(fd);
     sw.ShowCallstack();
+
+    array[0] = (void *)sw.error.c_str();
+    size = 1;
   #else
     // Write the Backtrace
     size = backtrace(array, 32);
@@ -231,15 +232,13 @@ SEGFAULT_HANDLER {
 
   CLOSE(fd);
 
-  #ifndef _WIN32
-    if (callback) {
-	  // execute the callback and wait until it has completed
-      callback->send(array, size, si->si_signo, (long)si->si_addr);
+  if (callback) {
+  // execute the callback and wait until it has completed
+    callback->send(array, size, code, address);
 
-	  // release the callback
-      delete callback;
-    }
-  #endif
+  // release the callback
+    delete callback;
+  }
 
   #ifdef _WIN32
     return EXCEPTION_EXECUTE_HANDLER;
@@ -299,8 +298,7 @@ NAN_METHOD(RegisterHandler) {
 
         strncpy(logPath, *utf8Value, len);
         logPath[127] = '\0';
-      
-      #ifndef _WIN32
+
       } else if (info[i]->IsFunction()) {
         if (callback) {
           // release previous callback
@@ -309,7 +307,6 @@ NAN_METHOD(RegisterHandler) {
 
         // create the new callback object
         callback = new callback_helper(Handle<Function>::Cast(info[i]));
-      #endif
 
       }
     }
