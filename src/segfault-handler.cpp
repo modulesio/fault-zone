@@ -167,7 +167,7 @@ struct callback_helper* callback;
 
 char logPath[BUFF_SIZE];
 
-static void buildFileName(char sbuff[BUFF_SIZE], int pid) {
+/* static void buildFileName(char sbuff[BUFF_SIZE], int pid) {
   time_t  now;
 
   // Construct a filename
@@ -177,7 +177,7 @@ static void buildFileName(char sbuff[BUFF_SIZE], int pid) {
   } else {
     SNPRINTF(sbuff, BUFF_SIZE, "stacktrace-%d-%d.log", (int)now, pid);
   }
-}
+} */
 
 SEGFAULT_HANDLER {
   long    address;
@@ -191,8 +191,8 @@ SEGFAULT_HANDLER {
 
   pid = GETPID();
 
-  buildFileName(sbuff, pid);
-  fd = OPEN(sbuff, O_FLAGS, S_FLAGS);
+  /* buildFileName(sbuff, pid);
+  fd = OPEN(sbuff, O_FLAGS, S_FLAGS); */
 
   #ifdef _WIN32
     address = (long)exceptionInfo->ExceptionRecord->ExceptionAddress;
@@ -228,8 +228,8 @@ SEGFAULT_HANDLER {
   #else
     // Write the Backtrace
     size = backtrace(array, 32);
-    if(fd > 0) backtrace_symbols_fd(array, size, fd);
-    backtrace_symbols_fd(array, size, STDERR_FD);
+    // if(fd > 0) backtrace_symbols_fd(array, size, fd);
+    backtrace_symbols(array, size);
   #endif
 
   size_t index = 0;
