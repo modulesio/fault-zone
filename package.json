@@ -1,7 +1,7 @@
 {
   "name": "fault-zone",
   "description": "catches SIGSEGV and prints diagnostic information",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "author": "Dave Dopson <ddopson@gmail.com>",
   "contributors": [
     "Dave Dopson <ddopson@gmail.com>",
