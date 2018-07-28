@@ -735,17 +735,6 @@ public:
 };
 
 // #############################################################
-StackWalker::StackWalker(long address, long code)
-{
-  this->m_address = address;
-  this->m_code = code;
-  this->m_options = OptionsAll;
-  this->m_modulesLoaded = FALSE;
-  this->m_hProcess = GetCurrentProcess();
-  this->m_sw = new StackWalkerInternal(this, this->m_hProcess);
-  this->m_dwProcessId = GetCurrentProcessId();
-  this->m_szSymPath = NULL;
-}
 StackWalker::StackWalker(/*int fDescriptor, */long address, long code, int options, LPCSTR szSymPath, DWORD dwProcessId, HANDLE hProcess)
 {
   // this->m_fDescriptor = fDescriptor;

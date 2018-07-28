@@ -73,7 +73,6 @@ public:
     DWORD dwProcessId = GetCurrentProcessId(),
     HANDLE hProcess = GetCurrentProcess()
     );
-  StackWalker(long address, long code);
   virtual ~StackWalker();
 
   typedef BOOL (__stdcall *PReadProcessMemoryRoutine)(
