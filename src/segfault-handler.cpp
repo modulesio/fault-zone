@@ -195,7 +195,7 @@ SEGFAULT_HANDLER {
   #ifdef _WIN32
     address = (long)exceptionInfo->ExceptionRecord->ExceptionAddress;
     code = (long)exceptionInfo->ExceptionRecord->ExceptionCode;
-    if (code < 0x80000000) {
+    if (code < 0x80000000 || code == 0xE06D7363) { // minor exception, first chance excption
       return EXCEPTION_CONTINUE_SEARCH;
     }
   #else
