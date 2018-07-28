@@ -66,12 +66,14 @@ public:
 
   StackWalker(
     // int fDescriptor,
+    long address = 0,
+    long code = 0,
     int options = OptionsAll, // 'int' is by design, to combine the enum-flags
     LPCSTR szSymPath = NULL,
     DWORD dwProcessId = GetCurrentProcessId(),
     HANDLE hProcess = GetCurrentProcess()
     );
-  StackWalker(DWORD dwProcessId, HANDLE hProcess);
+  StackWalker(long address, long code);
   virtual ~StackWalker();
 
   typedef BOOL (__stdcall *PReadProcessMemoryRoutine)(
@@ -92,6 +94,8 @@ public:
     LPVOID pUserData = NULL  // optional to identify some data in the 'readMemoryFunction'-callback
     );
 
+  long m_address;
+  long m_code;
   std::string error;
 
 #if _MSC_VER >= 1300

@@ -221,7 +221,7 @@ SEGFAULT_HANDLER {
 
   #ifdef _WIN32
     // will generate the stack trace and write to fd and stderr
-    StackWalker sw;
+    StackWalker sw(address, code);
     sw.ShowCallstack();
 
     array = new char *[32]; // Array to store backtrace symbols

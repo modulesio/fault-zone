@@ -735,18 +735,22 @@ public:
 };
 
 // #############################################################
-StackWalker::StackWalker(DWORD dwProcessId, HANDLE hProcess)
+StackWalker::StackWalker(long address, long code)
 {
+  this->m_address = address;
+  this->m_code = code;
   this->m_options = OptionsAll;
   this->m_modulesLoaded = FALSE;
-  this->m_hProcess = hProcess;
+  this->m_hProcess = GetCurrentProcess();
   this->m_sw = new StackWalkerInternal(this, this->m_hProcess);
-  this->m_dwProcessId = dwProcessId;
+  this->m_dwProcessId = GetCurrentProcessId();
   this->m_szSymPath = NULL;
 }
-StackWalker::StackWalker(/*int fDescriptor, */int options, LPCSTR szSymPath, DWORD dwProcessId, HANDLE hProcess)
+StackWalker::StackWalker(/*int fDescriptor, */long address, long code, int options, LPCSTR szSymPath, DWORD dwProcessId, HANDLE hProcess)
 {
   // this->m_fDescriptor = fDescriptor;
+  this->m_address = address;
+  this->m_code = code;
   this->m_options = options;
   this->m_modulesLoaded = FALSE;
   this->m_hProcess = hProcess;
@@ -935,6 +939,12 @@ BOOL StackWalker::ShowCallstack(HANDLE hThread, const CONTEXT *context, PReadPro
   }
   else
     c = *context;
+
+  {
+    CHAR buffer[STACKWALK_MAX_NAMELEN];
+    _snprintf_s(buffer, STACKWALK_MAX_NAMELEN, "Caught crash %x %x\n", this->m_address, this->m_code);
+    OnOutput(buffer);
+  }
 
   // init STACKFRAME for first call
   STACKFRAME64 s; // in/out stackframe
