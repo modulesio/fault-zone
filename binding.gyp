@@ -7,6 +7,9 @@
             "sources": [
              "src/segfault-handler.cpp"
            ],
+
+       "conditions": [
+          ["OS=='win'", {
           "msvs_settings": {
             "VCCLCompilerTool": {
               "DisableSpecificWarnings": ["4996"]
@@ -24,6 +27,8 @@
           "include_dirs": [
             "<!(node -e \"require('nan')\")"
           ],
+	       }]
+      	]
       }]
      ],
     }
