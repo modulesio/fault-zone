@@ -19,8 +19,8 @@
                 "src/StackWalker.cpp",
                 "includes/StackWalker.h"
               ],
-	  }]
-       ]
+	       }]
+       ],
 		  
       "cflags": [ "-O0" ],
       "xcode_settings": {
@@ -33,5 +33,4 @@
    ]
   }
  ]
-
 }
