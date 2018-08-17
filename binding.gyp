@@ -3,33 +3,37 @@
     {
       "target_name": "segfault-handler",
       "conditions": [
-        ["OS!='android'", {
-          "sources": [
-            "src/segfault-handler.cpp"
-          ],
-
+        ['"<!(echo $LUMIN)"!="1"', {
           "conditions": [
-            ["OS=='win'", {
-              "msvs_settings": {
-                "VCCLCompilerTool": {
-                  "DisableSpecificWarnings": ["4996"]
-                }
-              },
+            ["OS!='android'", {
               "sources": [
-                "src/StackWalker.cpp",
-                "includes/StackWalker.h"
+                "src/segfault-handler.cpp"
               ],
-            }]
-          ],
 
-          "cflags": [ "-O0" ],
-          "xcode_settings": {
-            "OTHER_CFLAGS": [ "-O0" ]
-          },
-          "include_dirs": [
-            "<!(node -e \"require('nan')\")"
-          ]
-        }]
+              "conditions": [
+                ["OS=='win'", {
+                  "msvs_settings": {
+                    "VCCLCompilerTool": {
+                      "DisableSpecificWarnings": ["4996"]
+                    }
+                  },
+                  "sources": [
+                    "src/StackWalker.cpp",
+                    "includes/StackWalker.h"
+                  ],
+                }],
+              ],
+
+              "cflags": [ "-O0" ],
+              "xcode_settings": {
+                "OTHER_CFLAGS": [ "-O0" ]
+              },
+              "include_dirs": [
+                "<!(node -e \"require('nan')\")"
+              ]
+            }],
+          ],
+        }],
       ]
     }
   ]
