@@ -4,7 +4,7 @@
       "target_name": "segfault-handler",
       "conditions": [
         ['"<!(echo $LUMIN)"!="1"', {
-          "conditions": {
+          "conditions": [
             ['"<!(echo $ANDROID)"!="1"', {
               "sources": [
                 "src/segfault-handler.cpp"
@@ -32,7 +32,7 @@
                 "<!(node -e \"require('nan')\")"
               ]
             }],
-          }
+          ]
         }],
       ]
     }
